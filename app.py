@@ -1,10 +1,13 @@
-from flask import Flask, request, jsonify, render_template_string, Response
+from flask import Flask, request, jsonify, render_template, Response
 import cloudinary
 import cloudinary.uploader
 from gradio_client import Client, handle_file
 import os
 import json
 from datetime import datetime
+import dotenv
+
+dotenv.load_dotenv()
 
 app = Flask(__name__)
 
@@ -59,9 +62,9 @@ def extract_variables(json_block):
 
 # Configure Cloudinary 
 cloudinary.config(
-    cloud_name='dcajb02df',
-    api_key='862192414383365',
-    api_secret='TDuIQPd_iRf5_ThniMlwn8Gaaq8'
+    cloud_name=os.getenv("CLOUD_NAME"),
+    api_key=os.getenv("API_KEY"),
+    api_secret=os.getenv("API_SECRET")
 )
 
 # Gradio model
@@ -69,125 +72,7 @@ client = Client("CohereLabs/command-a-vision")
 
 @app.route('/')
 def index():
-    return render_template_string("""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title> OCR </title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-4 text-center">Upload Aadhaar Front and Back for OCR</h2>
-
-    <form id="uploadForm">
-      <label class="block mb-1 font-medium">Front Side (Image 1)</label>
-      <input type="file" name="image1" accept="image/*" required class="mb-2 block w-full">
-      <img id="preview1" class="mb-4 w-full object-contain max-h-60 rounded border" style="display: none;" />
-
-      <label class="block mb-1 font-medium">Back Side (Image 2, Optional)</label>
-      <input type="file" name="image2" accept="image/*">
-      <img id="preview2" class="mb-4 w-full object-contain max-h-60 rounded border" style="display: none;" />
-
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Upload</button>
-    </form>
-
-    <div id="result" class="mt-6 text-sm whitespace-pre-wrap"></div>
-  </div>
-
-  <script>
-    const form = document.getElementById('uploadForm');
-    const resultDiv = document.getElementById('result');
-    const preview1 = document.getElementById('preview1');
-    const preview2 = document.getElementById('preview2');
-
-    form.image1.addEventListener('change', (e) => {
-      if (e.target.files[0]) {
-        preview1.src = URL.createObjectURL(e.target.files[0]);
-        preview1.style.display = 'block';
-      }
-    });
-
-    form.image2.addEventListener('change', (e) => {
-      if (e.target.files[0]) {
-        preview2.src = URL.createObjectURL(e.target.files[0]);
-        preview2.style.display = 'block';
-      }
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      resultDiv.innerText = 'Processing...';
-
-      const file1 = form.image1.files[0];
-      const file2 = form.image2.files[0];
-
-      if (!file1) {
-        resultDiv.innerText = 'Please select the front image.';
-        return;
-      }
-
-      const img1 = await loadImage(file1);
-      let finalBlob;
-
-      if (file2) {
-        const img2 = await loadImage(file2);
-
-        const canvas = document.createElement('canvas');
-        const width = Math.max(img1.width, img2.width);
-        const height = img1.height + img2.height;
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img1, 0, 0);
-        ctx.drawImage(img2, 0, img1.height);
-
-        finalBlob = await new Promise(resolve => {
-          canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.95);
-        });
-      } else {
-        finalBlob = file1;
-      }
-
-      const formData = new FormData();
-      formData.append('image', finalBlob, 'combined.jpg');
-
-      try {
-        const response = await fetch('/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        // Expect plain text response
-        const text = await response.text();
-        resultDiv.innerText = text;
-
-      } catch (err) {
-        resultDiv.innerText = 'Error: ' + err.message;
-      }
-    });
-
-    function loadImage(file) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = URL.createObjectURL(file);
-      });
-    }
-  </script>
-</body>
-</html>
-    """)
+    return render_template("index.html")
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
