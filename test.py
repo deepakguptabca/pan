@@ -1,4 +1,4 @@
-data = {
+data_dict = {
     "title": "Shri",
     "lastname": "Bhan",
     "firstname": "Udaya",
@@ -18,7 +18,6 @@ data = {
     "aadhaar_number": "980063077821",
 }
 
-# Convert and save back
-data["dob_month"] = str(int(data["dob_month"]))
-
-print(data["dob_month"])   # 3
+dobm = data_dict["dob_month"]
+if(dobm=="1"):
+    data_dict["dob_month"] = "January"

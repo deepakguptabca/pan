@@ -117,10 +117,34 @@ def upload_image():
         )
         
         data_dict = json.loads(result)
-        data_dict["dob_month"] = str(int(data_dict["dob_month"]))
         data_dict["dob_day"] = str(int(data_dict["dob_day"]))
 
-        print("Extracted Data:", data_dict)
+        dobm = data_dict["dob_month"]
+        if(dobm=="01"):
+            data_dict["dob_month"] = "January"
+        elif(dobm=="02"):
+            data_dict["dob_month"] = "February"
+        elif(dobm=="03"):
+            data_dict["dob_month"] = "March"
+        elif(dobm=="04"):   
+            data_dict["dob_month"] = "April"
+        elif(dobm=="05"):
+            data_dict["dob_month"] = "May"
+        elif(dobm=="06"):
+            data_dict["dob_month"] = "June"
+        elif(dobm=="07"):
+            data_dict["dob_month"] = "July"
+        elif(dobm=="08"):
+            data_dict["dob_month"] = "August"
+        elif(dobm=="09"):
+            data_dict["dob_month"] = "September"
+        elif(dobm=="10"):
+            data_dict["dob_month"] = "October"
+        elif(dobm=="11"):
+            data_dict["dob_month"] = "November"
+        elif(dobm=="12"):
+            data_dict["dob_month"] = "December"
+        # print("Extracted Data:", data_dict)
         
 
         variables = data_dict
