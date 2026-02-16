@@ -21,7 +21,10 @@
       <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Upload</button>
     </form>
 
-    <div id="result" class="mt-6 text-sm whitespace-pre-wrap"></div>
+    <div class="mt-6">
+      <button id="copyBtn" class="mt-2 bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">Copy</button>
+      <div id="result" class="text-sm whitespace-pre-wrap"></div>
+    </div>
   </div>
 
   <script>
@@ -110,6 +113,24 @@
         img.onload = () => resolve(img);
         img.onerror = reject;
         img.src = URL.createObjectURL(file);
+      });
+    }
+
+    // Copy button handling for #result
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          const text = resultDiv.innerText || '';
+          await navigator.clipboard.writeText(text);
+          const original = copyBtn.innerText;
+          copyBtn.innerText = 'Copied!';
+          setTimeout(() => { copyBtn.innerText = original; }, 1500);
+        } catch (err) {
+          console.error('Copy failed', err);
+          copyBtn.innerText = 'Failed';
+          setTimeout(() => { copyBtn.innerText = 'Copy'; }, 1500);
+        }
       });
     }
   </script>

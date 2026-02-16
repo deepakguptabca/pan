@@ -107,7 +107,7 @@ def upload_image():
   "sub_division": "",
   "district": "",
   "state": "",
-  "telephone": "",
+  "pincode": "",
   "aadhaar_number": ""
 }
 """,
@@ -118,6 +118,7 @@ def upload_image():
         
         data_dict = json.loads(result)
         data_dict["dob_day"] = str(int(data_dict["dob_day"]))
+        data_dict["state"] = data_dict["state"].upper()
 
         dobm = data_dict["dob_month"]
         if(dobm=="01"):
@@ -197,7 +198,7 @@ const fields = {{
   arealocality: "{variables['sub_division'] }",
   towncity: "{variables['district'] }",
   dstate: "{variables['state'] }",
-  residencepincode: "40{variables['telephone'] }001",
+  residencepincode: "{variables['pincode'] }",
   aadhaarnumber: "{variables['aadhaar_number'] }"
 }};
 
@@ -211,6 +212,9 @@ for (const [id, value] of Object.entries(fields)) {{
   }}
 }}
 
+const verifierPlace = document.getElementById("verifierplace");
+verifierPlace.value = "{variables['state'] }";
+verifierPlace.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
 """
