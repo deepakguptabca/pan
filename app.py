@@ -116,15 +116,27 @@ def upload_image():
             api_name="/chat"
         )
         
+        #dob change from 01 to 1
+        dob_month = extract_variables(result).get("dob_month")
+        dob_month = str(int(dob_month))
+        result["dob_month"] = dob_month
+
+        #dob change from 01 to 1
+        dob_day = extract_variables(result).get("dob_day")
+        dob_day = str(int(dob_day))
+        result["dob_day"] = dob_day
+
+        # print("Raw OCR Result:", result)
+
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         filepath = f"./ocr_result_{timestamp}.json"
 
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
-        print("OCR Result:", result)
+        # print("OCR Result:", result)
 
         variables = extract_variables(result)
-        print("aadhaar:", variables.get("aadhaar_number"))
+        # print("aadhaar:", variables.get("aadhaar_number"))
        
         # Inject dict directly into JS as object
         js_code = f"""
@@ -190,7 +202,7 @@ for (const [id, value] of Object.entries(fields)) {{
 
 
 """
-        print("JS Code:", js_code)
+        # print("JS Code:", js_code)
         return Response(js_code, mimetype="text/plain")
 
     except Exception as e:
