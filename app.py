@@ -6,6 +6,7 @@ import os
 import json
 from datetime import datetime
 import dotenv
+# import google.generativeai as genai
 
 dotenv.load_dotenv()
 
@@ -74,6 +75,8 @@ client = Client("CohereLabs/command-a-vision")
 def index():
     return render_template("index.html")
 
+
+
 @app.route('/upload', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
@@ -89,7 +92,7 @@ def upload_image():
         # Send to Gradio OCR model
         result = client.predict(
             message={
-                "text": """Extract the following fields from this Aadhaar card image and return **only** the result as a raw JSON object. Do not include any explanations, Markdown formatting, or backticks. Leave any missing field value as an empty string,and title is based on gender,father name could be found on address line and give aadhar number without spacing.
+                "text": """Extract the following fields from this Aadhaar card image and return **only** the result as a raw JSON object. Do not include any explanations, Markdown formatting, or backticks. Leave any missing field value as an empty string,and title is based on gender,father name could be found on address line and give aadhar number without spacing,fill district name in dist_code too.
 
 {
   "title": Shri / Smt.,
@@ -108,7 +111,8 @@ def upload_image():
   "district": "",
   "state": "",
   "pincode": "",
-  "aadhaar_number": ""
+  "aadhaar_number": "",
+  "dist_code": "",
 }
 """,
                 "files": [handle_file(image_url)]
