@@ -202,6 +202,8 @@ dobYear.value = "{variables['dob_year'] }";
 dobYear.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
+
+
 const fields = {{
   regflat: "{variables['flat'] }",
   nopbuilding: "{variables['village'] }",
@@ -233,40 +235,25 @@ verifierPlace.dispatchEvent(new Event("change", {{ bubbles: true }}));
         if(dist_code):
             js_code += f"""
 
-const d1 = document.getElementById('areacode_dropdown');
-d1.selectedIndex = 1;
-d1.dispatchEvent(new Event('change', {{ bubbles: true }}));
-    
+    const dropdown1 = document.getElementById('areacode_dropdown');
+    dropdown1.selectedIndex = 1;  
+    dropdown1.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
-setTimeout(() => {{
-    const d2 = document.getElementById('aotype_dropdown');
-    if(d2 && d2.options.length > 1) {{
-        d2.selectedIndex = 1;
-        d2.dispatchEvent(new Event('change', {{ bubbles: true }}));
-    }}
+    const dropdown2 = document.getElementById('aotype_dropdown');
+    dropdown2.selectedIndex = 1;  
+    dropdown2.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
-    // 3. Wait another 500ms for Range Code to load
-    setTimeout(() => {{
-        const d3 = document.getElementById('rangecode_dropdown');
-        if(d3 && d3.options.length > 1) {{
-            d3.selectedIndex = 1;
-            d3.dispatchEvent(new Event('change', {{ bubbles: true }}));
-        }}
+    const dropdown3 = document.getElementById('rangecode_dropdown');
+    dropdown3.selectedIndex = 1;  
+    dropdown3.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
-        // 4. Wait another 500ms for AO No to load
-        setTimeout(() => {{
-            const d4 = document.getElementById('anno_dropdown');
-            if(d4 && d4.options.length > 1) {{
-                d4.selectedIndex = 1;
-                d4.dispatchEvent(new Event('change', {{ bubbles: true }}));
-            }}
-        }}, 500);
-    }}, 500);
-}}, 500);
+    const dropdown4 = document.getElementById('anno_dropdown');
+    dropdown4.selectedIndex = 1;  
+    dropdown4.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
     """
         
-
+aa
         # print("JS Code:", js_code)
         return Response(js_code, mimetype="text/plain")
 
