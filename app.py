@@ -117,6 +117,7 @@ def upload_image():
         )
         
         data_dict = json.loads(result)
+        print("Extracted Data:", data_dict)
         data_dict["dob_day"] = str(int(data_dict["dob_day"]))
         data_dict["state"] = data_dict["state"].upper()
 
