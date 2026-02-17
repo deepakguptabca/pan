@@ -6,7 +6,7 @@ import os
 import json
 from datetime import datetime
 import dotenv
-# import google.generativeai as genai
+from dist import city_dict
 
 dotenv.load_dotenv()
 
@@ -121,7 +121,6 @@ def upload_image():
         )
         
         data_dict = json.loads(result)
-        print("Extracted Data:", data_dict)
         data_dict["dob_day"] = str(int(data_dict["dob_day"]))
         data_dict["state"] = data_dict["state"].upper()
 
@@ -150,9 +149,20 @@ def upload_image():
             data_dict["dob_month"] = "November"
         elif(dobm=="12"):
             data_dict["dob_month"] = "December"
-        # print("Extracted Data:", data_dict)
+        
+        extract_dist = data_dict["district"].upper()
+        dist_code = None
+
+        for code, name in city_dict.items():
+            if name == extract_dist:
+                dist_code = code
+                break
         
 
+
+
+
+        print("Extracted Data:", data_dict)
         variables = data_dict
 
        
@@ -165,11 +175,13 @@ select.value =  "{variables['title'] }";
 select.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
-
-
 const lastNameInput = document.getElementById("alastnameind");
 lastNameInput.value = "{variables['lastname'] }";
 lastNameInput.dispatchEvent(new Event("change",{{ bubbles: true }} ));
+
+const city_code = document.getElementById("citys");
+city_code.value = "{dist_code}";
+city_code.dispatchEvent(new Event("change",{{ bubbles: true }} ));
 
 
 const firstNameInput = document.getElementById("afirstnameind");
@@ -189,12 +201,6 @@ const dobYear = document.getElementById("doby");
 dobYear.value = "{variables['dob_year'] }";
 dobYear.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
-
-const fatherLastName = document.getElementById("fatherlastname");
-fatherLastName.value = "{variables['father_lastname'] }";
-fatherLastName.dispatchEvent(new Event("change", {{bubbles: true   }}));const fatherFirstName = document.getElementById("fatherfirstname");
-fatherFirstName.value = "{variables['father_firstname'] }";
-fatherFirstName.dispatchEvent(new Event("change", {{bubbles: true }}));
 
 const fields = {{
   regflat: "{variables['flat'] }",
@@ -223,6 +229,44 @@ verifierPlace.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
 """
+        
+        if(dist_code):
+            js_code += f"""
+
+const d1 = document.getElementById('areacode_dropdown');
+d1.selectedIndex = 1;
+d1.dispatchEvent(new Event('change', {{ bubbles: true }}));
+    
+
+setTimeout(() => {{
+    const d2 = document.getElementById('aotype_dropdown');
+    if(d2 && d2.options.length > 1) {{
+        d2.selectedIndex = 1;
+        d2.dispatchEvent(new Event('change', {{ bubbles: true }}));
+    }}
+
+    // 3. Wait another 500ms for Range Code to load
+    setTimeout(() => {{
+        const d3 = document.getElementById('rangecode_dropdown');
+        if(d3 && d3.options.length > 1) {{
+            d3.selectedIndex = 1;
+            d3.dispatchEvent(new Event('change', {{ bubbles: true }}));
+        }}
+
+        // 4. Wait another 500ms for AO No to load
+        setTimeout(() => {{
+            const d4 = document.getElementById('anno_dropdown');
+            if(d4 && d4.options.length > 1) {{
+                d4.selectedIndex = 1;
+                d4.dispatchEvent(new Event('change', {{ bubbles: true }}));
+            }}
+        }}, 500);
+    }}, 500);
+}}, 500);
+
+    """
+        
+
         # print("JS Code:", js_code)
         return Response(js_code, mimetype="text/plain")
 
