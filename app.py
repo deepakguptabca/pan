@@ -189,10 +189,11 @@ const email_id = document.getElementById("venderemailids");
 email_id.value = "{variables['email']}";
 email_id.dispatchEvent(new Event("change",{{ bubbles: true }} ));
 
-
+setTimeout(()=>{{
 const firstNameInput = document.getElementById("afirstnameind");
 firstNameInput.value = "{variables['firstname'] }";
 firstNameInput.dispatchEvent(new Event("change", {{ bubbles: true }}));
+}},1000)
 
 
 const dobDay = document.getElementById("dobd");
@@ -207,13 +208,14 @@ const dobYear = document.getElementById("doby");
 dobYear.value = "{variables['dob_year'] }";
 dobYear.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
+const father_last = document.getElementById("fatherlastname");
+father_last.value = "{variables['father_lastname'] }";
+father_last.dispatchEvent(new Event("change", {{ bubbles: true }}));
+
 const father_first = document.getElementById("fatherfirstname");
 father_first.value = "{variables['father_firstname'] }";
 father_first.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
-const father_last = document.getElementById("fatherlastname");
-father_last.value = "{variables['father_lastname'] }";
-father_last.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
 const fields = {{
