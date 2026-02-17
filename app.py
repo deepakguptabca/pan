@@ -92,7 +92,7 @@ def upload_image():
         # Send to Gradio OCR model
         result = client.predict(
             message={
-                "text": """Extract the following fields from this Aadhaar card image and return **only** the result as a raw JSON object. Do not include any explanations, Markdown formatting, or backticks. Leave any missing field value as an empty string,and title is based on gender,father name could be found on address line and give aadhar number without spacing,fill district name in dist_code too.
+                "text": """Extract the following fields from this Aadhaar card image and return **only** the result as a raw JSON object. Do not include any explanations, Markdown formatting, or backticks. Leave any missing field value as an empty string,and title is based on gender,and give aadhar number without spacing,fill district name in dist_code too.Fill mobile no,email id and father name also,extract this from image.if father name or name is a single word then put that in lastname and leave firstname empty.
 
 {
   "title": Shri / Smt.,
@@ -113,6 +113,8 @@ def upload_image():
   "pincode": "",
   "aadhaar_number": "",
   "dist_code": "",
+  "mob":"",
+  "email":""
 }
 """,
                 "files": [handle_file(image_url)]
@@ -158,10 +160,6 @@ def upload_image():
                 dist_code = code
                 break
         
-
-
-
-
         print("Extracted Data:", data_dict)
         variables = data_dict
 
@@ -183,6 +181,14 @@ const city_code = document.getElementById("citys");
 city_code.value = "{dist_code}";
 city_code.dispatchEvent(new Event("change",{{ bubbles: true }} ));
 
+const mobile_no = document.getElementById("contactdtl");
+mobile_no.value = "{variables['mob']}";
+mobile_no.dispatchEvent(new Event("change",{{ bubbles: true }} ));
+
+const email_id = document.getElementById("venderemailids");
+email_id.value = "{variables['email']}";
+email_id.dispatchEvent(new Event("change",{{ bubbles: true }} ));
+
 
 const firstNameInput = document.getElementById("afirstnameind");
 firstNameInput.value = "{variables['firstname'] }";
@@ -201,7 +207,13 @@ const dobYear = document.getElementById("doby");
 dobYear.value = "{variables['dob_year'] }";
 dobYear.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
+const father_first = document.getElementById("fatherfirstname");
+father_first.value = "{variables['father_firstname'] }";
+father_first.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
+const father_last = document.getElementById("fatherlastname");
+father_last.value = "{variables['father_lastname'] }";
+father_last.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
 const fields = {{
@@ -235,25 +247,38 @@ verifierPlace.dispatchEvent(new Event("change", {{ bubbles: true }}));
         if(dist_code):
             js_code += f"""
 
-    const dropdown1 = document.getElementById('areacode_dropdown');
-    dropdown1.selectedIndex = 1;  
+const dropdown1 = document.getElementById('areacode_dropdown');
+const dropdown2 = document.getElementById('aotype_dropdown');
+const dropdown3 = document.getElementById('rangecode_dropdown');
+const dropdown4 = document.getElementById('anno_dropdown');
+
+setTimeout(() => {{
+    dropdown1.selectedIndex = 1;
     dropdown1.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
-    const dropdown2 = document.getElementById('aotype_dropdown');
-    dropdown2.selectedIndex = 1;  
-    dropdown2.dispatchEvent(new Event('change', {{ bubbles: true }}));
+    setTimeout(() => {{
+        dropdown2.selectedIndex = 1;
+        dropdown2.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
-    const dropdown3 = document.getElementById('rangecode_dropdown');
-    dropdown3.selectedIndex = 1;  
-    dropdown3.dispatchEvent(new Event('change', {{ bubbles: true }}));
+        setTimeout(() => {{
+            dropdown3.selectedIndex = 1;
+            dropdown3.dispatchEvent(new Event('change', {{ bubbles: true }}));
 
-    const dropdown4 = document.getElementById('anno_dropdown');
-    dropdown4.selectedIndex = 1;  
-    dropdown4.dispatchEvent(new Event('change', {{ bubbles: true }}));
+            setTimeout(() => {{
+                dropdown4.selectedIndex = 1;
+                dropdown4.dispatchEvent(new Event('change', {{ bubbles: true }}));
+            }}, 1000);
+
+        }}, 1000);
+
+    }}, 1000);
+
+}}, 1000);
+
 
     """
         
-aa
+
         # print("JS Code:", js_code)
         return Response(js_code, mimetype="text/plain")
 

@@ -4,7 +4,7 @@ fatherLastName.dispatchEvent(new Event("change", {{bubbles: true   }}));const fa
 fatherFirstName.value = "{variables['father_firstname'] }";
 fatherFirstName.dispatchEvent(new Event("change", {{bubbles: true }}));
 
-
+22
 
         js_code = f"""
 
@@ -68,3 +68,21 @@ verifierPlace.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
 """
+
+33
+
+const dropdown1 = document.getElementById('areacode_dropdown');
+    dropdown1.selectedIndex = 1;  
+    dropdown1.dispatchEvent(new Event('change', {{ bubbles: true }}));
+
+    const dropdown2 = document.getElementById('aotype_dropdown');
+    dropdown2.selectedIndex = 1;  
+    dropdown2.dispatchEvent(new Event('change', {{ bubbles: true }}));
+
+    const dropdown3 = document.getElementById('rangecode_dropdown');
+    dropdown3.selectedIndex = 1;  
+    dropdown3.dispatchEvent(new Event('change', {{ bubbles: true }}));
+
+    const dropdown4 = document.getElementById('anno_dropdown');
+    dropdown4.selectedIndex = 1;  
+    dropdown4.dispatchEvent(new Event('change', {{ bubbles: true }}));
