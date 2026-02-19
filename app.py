@@ -216,6 +216,7 @@ setTimeout(()=>{{
 const firstNameInput = document.getElementById("afirstnameind");
 firstNameInput.value = "{variables['firstname'] }";
 firstNameInput.dispatchEvent(new Event("change", {{ bubbles: true }}));
+firstNameInput.disabled = false;
 }},1000)
 
 
@@ -238,7 +239,7 @@ father_last.dispatchEvent(new Event("change", {{ bubbles: true }}));
 const father_first = document.getElementById("fatherfirstname");
 father_first.value = "{variables['father_firstname'] }";
 father_first.dispatchEvent(new Event("change", {{ bubbles: true }}));
-
+father_first.disabled = false;
 
 
 const fields = {{
