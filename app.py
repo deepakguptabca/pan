@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, Response,send_file
+from flask import Flask, request, jsonify, render_template, Response, send_file
 import cloudinary
 import cloudinary.uploader
 from gradio_client import Client, handle_file
@@ -16,7 +16,8 @@ from dist import city_dict
 dotenv.load_dotenv()
 
 app = Flask(__name__)
-BG_API_KEY = os.getenv("BG_API_KEY")
+BG_API_KEY = os.getenv("REMOVE_BG_KEY")
+
 
 def bg_remove(sign_img):
     img_byte_arr = io.BytesIO()
@@ -31,6 +32,7 @@ def bg_remove(sign_img):
     )
 
     if response.status_code == requests.codes.ok:
+        print("Background removed successfully")
         return Image.open(io.BytesIO(response.content))
     else:
         raise Exception(response.text)
@@ -38,10 +40,9 @@ def bg_remove(sign_img):
 
 ###====>Variable extractor
 def extract_variables(json_block):
-    
+
     cleaned = json_block.replace("\njson", "").replace("\n", "").strip()
-    
-    
+
     data = json.loads(cleaned)
 
     # Destructure values into variables
@@ -81,36 +82,37 @@ def extract_variables(json_block):
         "district": district,
         "state": state,
         "telephone": telephone,
-        "aadhaar_number": aadhaar_number
+        "aadhaar_number": aadhaar_number,
     }
 
-# Configure Cloudinary 
+
+# Configure Cloudinary
 cloudinary.config(
     cloud_name=os.getenv("CLOUD_NAME"),
     api_key=os.getenv("API_KEY"),
-    api_secret=os.getenv("API_SECRET")
+    api_secret=os.getenv("API_SECRET"),
 )
 
 # Gradio model
 client = Client("CohereLabs/command-a-vision")
 
-@app.route('/')
+
+@app.route("/")
 def index():
     return render_template("index.html")
 
 
-
-@app.route('/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def upload_image():
-    if 'image' not in request.files:
+    if "image" not in request.files:
         return jsonify({"error": "No image uploaded"}), 400
 
-    file = request.files['image']
+    file = request.files["image"]
 
     try:
         # Upload to Cloud
         upload_result = cloudinary.uploader.upload(file)
-        image_url = upload_result['secure_url']
+        image_url = upload_result["secure_url"]
 
         # Send to Gradio OCR model
         result = client.predict(
@@ -140,41 +142,41 @@ def upload_image():
   "email":""
 }
 """,
-                "files": [handle_file(image_url)]
+                "files": [handle_file(image_url)],
             },
-            api_name="/chat"
+            api_name="/chat",
         )
-        
+
         data_dict = json.loads(result)
         data_dict["dob_day"] = str(int(data_dict["dob_day"]))
         data_dict["state"] = data_dict["state"].upper()
 
         dobm = data_dict["dob_month"]
-        if(dobm=="01"):
+        if dobm == "01":
             data_dict["dob_month"] = "January"
-        elif(dobm=="02"):
+        elif dobm == "02":
             data_dict["dob_month"] = "February"
-        elif(dobm=="03"):
+        elif dobm == "03":
             data_dict["dob_month"] = "March"
-        elif(dobm=="04"):   
+        elif dobm == "04":
             data_dict["dob_month"] = "April"
-        elif(dobm=="05"):
+        elif dobm == "05":
             data_dict["dob_month"] = "May"
-        elif(dobm=="06"):
+        elif dobm == "06":
             data_dict["dob_month"] = "June"
-        elif(dobm=="07"):
+        elif dobm == "07":
             data_dict["dob_month"] = "July"
-        elif(dobm=="08"):
+        elif dobm == "08":
             data_dict["dob_month"] = "August"
-        elif(dobm=="09"):
+        elif dobm == "09":
             data_dict["dob_month"] = "September"
-        elif(dobm=="10"):
+        elif dobm == "10":
             data_dict["dob_month"] = "October"
-        elif(dobm=="11"):
+        elif dobm == "11":
             data_dict["dob_month"] = "November"
-        elif(dobm=="12"):
+        elif dobm == "12":
             data_dict["dob_month"] = "December"
-        
+
         extract_dist = data_dict["district"].upper()
         dist_code = None
 
@@ -182,11 +184,10 @@ def upload_image():
             if name == extract_dist:
                 dist_code = code
                 break
-        
+
         print("Extracted Data:", data_dict)
         variables = data_dict
 
-       
         # Inject dict directly into JS as object
         js_code = f"""
 
@@ -269,8 +270,8 @@ verifierPlace.dispatchEvent(new Event("change", {{ bubbles: true }}));
 
 
 """
-        
-        if(dist_code):
+
+        if dist_code:
             js_code += f"""
 
 const dropdown1 = document.getElementById('areacode_dropdown');
@@ -303,14 +304,13 @@ setTimeout(() => {{
 
 
     """
-        
 
         # print("JS Code:", js_code)
         return Response(js_code, mimetype="text/plain")
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 
 @app.route("/convert", methods=["POST"])
 def convert_pdf_and_stick_photo():
@@ -359,24 +359,30 @@ def convert_pdf_and_stick_photo():
         fbackground.paste(photo, (108, 104))
         fbackground.paste(photo, (2017, 105))
         fbackground.paste(bg_sign, (264, 220), bg_sign)
-        fbackground.paste(sign, (1882, 622))
-        sbackground.paste(sign, (1819, 3184), bg_sign)
+        fbackground.paste(bg_sign, (1882, 622), bg_sign)
+        sbackground.paste(bg_sign, (1819, 3184), bg_sign)
 
         # Save final image in memory of first image
         final_imgf = io.BytesIO()
         fbackground.save(final_imgf, format="JPEG")
+        final_imgf.seek(0)
 
         # Save final image in memory of second image
         final_imgs = io.BytesIO()
         sbackground.save(final_imgs, format="JPEG")
+        final_imgs.seek(0)
+
+        print("First image size:", len(final_imgf.getvalue()))
+        print("Second image size:", len(final_imgs.getvalue()))
+        if len(pdf_document) < 2:
+            return {"error": "PDF must have at least 2 pages"}, 400
 
         # Create zip in memory
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr("first_page.jpg", final_imgf.getvalue())
             zip_file.writestr("second_page.jpg", final_imgs.getvalue())
 
-        # Reset buffer position to beginning
         zip_buffer.seek(0)
 
         return send_file(
@@ -389,5 +395,6 @@ def convert_pdf_and_stick_photo():
     except Exception as e:
         return {"error": str(e)}, 500
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
