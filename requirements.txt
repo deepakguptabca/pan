@@ -1,6 +1,4 @@
 ﻿flask
-cloudinary
-gradio_client
 dotenv
 pillow
 rembg
