@@ -52,6 +52,8 @@
           >
             <option value="new">New Form</option>
             <option value="correction">Correction</option>
+            <option value="utiNew">UTI NEW</option>
+            <option value="utiCorrection">UTI CORRECTION</option>
           </select>
 
           <button
@@ -92,7 +94,23 @@
               a.click();
               a.remove();
             });
-        } else {
+        }else if(form_typee.value == "utiNew"){
+          fetch("/utiNewPanCard", {
+            method: "POST",
+            body: formdata,
+          })
+            .then((response) => response.blob())
+            .then((blob) => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "output.zip";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+            });
+        }
+        else {
           fetch("/convert", {
             method: "POST",
             body: formdata,
@@ -111,7 +129,7 @@
       });
     </script>
 
-    <script>
+    <!-- <script>
       const form = document.getElementById("uploadForm");
       const resultDiv = document.getElementById("result");
       const preview1 = document.getElementById("preview1");
@@ -230,6 +248,8 @@
           }
         });
       }
-    </script>
+    </script> -->
+
+
   </body>
 </html>
