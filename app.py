@@ -171,24 +171,31 @@ def convert_pdf_and_stick_photo_correction():
         # bg_sign =  bg_sign.resize((324,111))
 
         # Paste photo (change position as needed)
-        fbackground.paste(photo, (148, 97))
-        fbackground.paste(photo, (1925, 99))
-        fbackground.paste(bg_sign, (428, 361), bg_sign)
-        fbackground.paste(bg_sign, (1841,3199), bg_sign)
+        fbackground.paste(photo, (150, 99))
+        fbackground.paste(photo, (1924,100))
+        fbackground.paste(bg_sign, (452, 361), bg_sign)
+        sbackground.paste(bg_sign, (1556,674), bg_sign)
 
         # Save final image in memory of first image
         final_imgf = io.BytesIO()
         fbackground.save(final_imgf, format="JPEG")
         final_imgf.seek(0)
 
+        # Save final image in memory of second image
+        final_imgs = io.BytesIO()
+        sbackground.save(final_imgs, format="JPEG")
+        final_imgs.seek(0)
+
         print("First image size:", len(final_imgf.getvalue()))
-        if len(pdf_document) < 1:
-            return {"error": "PDF must have at least 1 page"}, 400
+        print("Second image size:", len(final_imgs.getvalue()))
+        if len(pdf_document) < 2:
+            return {"error": "PDF must have at least 2 pages"}, 400
 
         # Create zip in memory
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr("first_page.jpg", final_imgf.getvalue())
+            zip_file.writestr("second_page.jpg", final_imgs.getvalue())
 
         zip_buffer.seek(0)
 
