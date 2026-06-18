@@ -9,14 +9,29 @@
   <body
     class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-6"
   >
-    <div class="grid md:grid-cols-2 gap-10 w-full max-w-6xl">
-
+    <div class="gap-10 w-full max-w-6xl">
       <!-- PDF PHOTO SIGN SECTION -->
       <div class="bg-white rounded-2xl shadow-xl p-8">
         <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">
-          📦 Generate Form Files
+           Generate Form Files
         </h2>
 
+        <div class=" items-center w-full" >
+          <label class="font-medium text-gray-600">Enter API Key</label>
+          <input
+            type="text"
+            id="api_key"
+            class="m-2 block w-full border rounded-lg p-2 bg-gray-50"
+            placeholder="Enter your API key here"
+          />
+          <button
+            class="font-bold font-medium text-center border-2 p-2 m-2 rounded-lg mx-auto"
+            onclick="handleAPIKey()"
+          >
+            Save
+          </button>
+          
+        </div>
         <form id="uploadform" class="space-y-4">
           <div>
             <label class="font-medium text-gray-600">Upload PDF</label>
@@ -64,11 +79,7 @@
           </button>
         </form>
       </div>
-
     </div>
-
-
-
 
     <script>
       let form_typee = document.getElementById("form_typee");
@@ -94,7 +105,7 @@
               a.click();
               a.remove();
             });
-        }else if(form_typee.value == "utiNew"){
+        } else if (form_typee.value == "utiNew") {
           fetch("/utiNewPanCard", {
             method: "POST",
             body: formdata,
@@ -109,8 +120,22 @@
               a.click();
               a.remove();
             });
-        }
-        else {
+        }else if(form_typee.value == "utiCorrection"){
+          fetch("/utiCorrection", {
+            method: "POST",
+            body: formdata,
+          })
+            .then((response) => response.blob())
+            .then((blob) => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "output.zip";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+            });}
+         else {
           fetch("/convert", {
             method: "POST",
             body: formdata,
@@ -127,129 +152,27 @@
             });
         }
       });
+
+      const handleAPIKey = () =>{
+        const apiKey = document.getElementById("api_key").value;
+        const res = fetch("/bg_api_key", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ api_key: apiKey }),
+        })
+        localStorage.setItem("apiKey", apiKey);
+      }
+
+      window.onload = () => {
+        const savedKey = localStorage.getItem("apiKey");
+        if(savedKey){
+          document.getElementById("api_key").value = savedKey;
+        }
+      }
     </script>
 
-    <!-- <script>
-      const form = document.getElementById("uploadForm");
-      const resultDiv = document.getElementById("result");
-      const preview1 = document.getElementById("preview1");
-      const preview2 = document.getElementById("preview2");
-      let form_type = document.getElementById("form_type");
-
-      form.image1.addEventListener("change", (e) => {
-        if (e.target.files[0]) {
-          preview1.src = URL.createObjectURL(e.target.files[0]);
-          preview1.style.display = "block";
-        }
-      });
-
-      form.image2.addEventListener("change", (e) => {
-        if (e.target.files[0]) {
-          preview2.src = URL.createObjectURL(e.target.files[0]);
-          preview2.style.display = "block";
-        }
-      });
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        resultDiv.innerText = "Processing...";
-
-        const file1 = form.image1.files[0];
-        const file2 = form.image2.files[0];
-
-        if (!file1) {
-          resultDiv.innerText = "Please select the front image.";
-          return;
-        }
-
-        const img1 = await loadImage(file1);
-        let finalBlob;
-
-        if (file2) {
-          const img2 = await loadImage(file2);
-
-          const canvas = document.createElement("canvas");
-          const width = Math.max(img1.width, img2.width);
-          const height = img1.height + img2.height;
-
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "white";
-          ctx.fillRect(0, 0, width, height);
-          ctx.drawImage(img1, 0, 0);
-          ctx.drawImage(img2, 0, img1.height);
-
-          finalBlob = await new Promise((resolve) => {
-            canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.95);
-          });
-        } else {
-          finalBlob = file1;
-        }
-
-        const formData = new FormData();
-        formData.append("image", finalBlob, "combined.jpg");
-
-        let response;
-
-        try {
-          if (form_type.value == "new") {
-            response = await fetch("/upload", {
-              method: "POST",
-              body: formData,
-            });
-          } else {
-            response = await fetch("/correctionUpload", {
-              method: "POST",
-              body: formData,
-            });
-          }
-
-          if (!response.ok) {
-            throw new Error(await response.text());
-          }
-
-          // Expect plain text response
-          const text = await response.text();
-          resultDiv.innerText = text;
-        } catch (err) {
-          resultDiv.innerText = "Error: " + err.message;
-        }
-      });
-
-      function loadImage(file) {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          img.src = URL.createObjectURL(file);
-        });
-      }
-
-      // Copy button handling for #result
-      const copyBtn = document.getElementById("copyBtn");
-      if (copyBtn) {
-        copyBtn.addEventListener("click", async () => {
-          try {
-            const text = resultDiv.innerText || "";
-            await navigator.clipboard.writeText(text);
-            const original = copyBtn.innerText;
-            copyBtn.innerText = "Copied!";
-            setTimeout(() => {
-              copyBtn.innerText = original;
-            }, 1500);
-          } catch (err) {
-            console.error("Copy failed", err);
-            copyBtn.innerText = "Failed";
-            setTimeout(() => {
-              copyBtn.innerText = "Copy";
-            }, 1500);
-          }
-        });
-      }
-    </script> -->
-
-
+  
   </body>
 </html>

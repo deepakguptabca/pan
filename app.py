@@ -13,7 +13,8 @@ import zipfile
 dotenv.load_dotenv()
 
 app = Flask(__name__)
-BG_API_KEY = os.getenv("REMOVE_BG_KEY")
+
+BG_API_KEY = 'none'
 
 
 def bg_remove(sign_img):
@@ -37,12 +38,16 @@ def bg_remove(sign_img):
 
 
 
-
-
 @app.route("/")
 def index():
     return render_template("index.html")
 
+@app.route("/bg_api_key",methods=["POST"])
+def get_bg_api_key():
+    global BG_API_KEY
+    data = request.get_json()
+    BG_API_KEY = data["api_key"]
+    return {"message": "API key updated successfully"}
 
 @app.route("/convert", methods=["POST"])
 def convert_pdf_and_stick_photo():
@@ -251,13 +256,95 @@ def UTI_NEW_PAN_CARD():
 
         # change bg of sign
         bg_sign = bg_remove(sign)
-        # bg_sign =  bg_sign.resize((324,111))
 
         # Paste photo (change position as needed)
         fbackground.paste(photo, (68, 468))
         fbackground.paste(photo, (2018,468))
         fbackground.paste(bg_sign, (320,700), bg_sign)
         sbackground.paste(bg_sign,(1623,3197),bg_sign)
+
+        # Save final image in memory of first image
+        final_imgf = io.BytesIO()
+        fbackground.save(final_imgf, format="JPEG")
+        final_imgf.seek(0)
+
+        # Save final image in memory of second image
+        final_imgs = io.BytesIO()
+        sbackground.save(final_imgs, format="JPEG")
+        final_imgs.seek(0)
+
+        print("First image size:", len(final_imgf.getvalue()))
+        print("Second image size:", len(final_imgs.getvalue()))
+        if len(pdf_document) < 2:
+            return {"error": "PDF must have at least 2 pages"}, 400
+
+        # Create zip in memory
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            zip_file.writestr("first_page.jpg", final_imgf.getvalue())
+            zip_file.writestr("second_page.jpg", final_imgs.getvalue())
+
+        zip_buffer.seek(0)
+
+        return send_file(
+            zip_buffer,
+            mimetype="application/zip",
+            as_attachment=True,
+            download_name="final_images.zip",
+        )
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@app.route("/utiCorrection",methods=["POST"])
+def UTI_CORRECTION():
+    try:
+        # Get PDF and Photo from Postman
+        pdf_file = request.files.get("pdf")
+        photo_file = request.files.get("photo")
+        sign_file = request.files.get("sign")
+
+        if not pdf_file or not photo_file or not sign_file:
+            return {"error": "PDF and Photo are required"}, 400
+
+        # Read PDF in memory
+        pdf_bytes = pdf_file.read()
+        pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+
+        # Convert first page to image
+        fpage = pdf_document[0]
+        fpix = fpage.get_pixmap(dpi=300)
+
+        # Convert second page to image
+        spage = pdf_document[1]
+        spix = spage.get_pixmap(dpi=300)
+
+        # Convert pixmap to PIL Image of first page
+        fimg_bytes = fpix.tobytes("jpeg")
+        fbackground = Image.open(io.BytesIO(fimg_bytes))
+
+        # Convert pixmap to PIL Image of second page
+        simg_bytes = spix.tobytes("jpeg")
+        sbackground = Image.open(io.BytesIO(simg_bytes))
+
+        # Open photo and sign
+        photo = Image.open(photo_file)
+        sign = Image.open(sign_file)
+
+        # Resize photo (change size as needed)
+        photo = photo.resize((400, 518))
+        sign = sign.resize((389,96))
+
+        # change bg of sign
+        bg_sign = bg_remove(sign)
+        if(bg_sign): return {"error": "Background removal failed"}, 500 
+
+        # Paste photo (change position as needed)
+        fbackground.paste(photo, (72, 485))
+        fbackground.paste(photo, (2015,486))
+        fbackground.paste(bg_sign, (361,721), bg_sign)
+        sbackground.paste(bg_sign,(1733,1493),bg_sign)
 
         # Save final image in memory of first image
         final_imgf = io.BytesIO()
