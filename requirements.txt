@@ -6,3 +6,4 @@ onnxruntime
 fastapi
 PyMuPDF
 frontend
+NumPy=1.26.4
