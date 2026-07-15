@@ -1,0 +1,10 @@
+services:
+  pan-app:
+    buidl: .
+
+    container_name: pan-app
+
+    ports:
+      - "8001:8001"
+
+    restart: unless-stopped
